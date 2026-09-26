@@ -1,0 +1,1211 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Kristal Blok — parlat, patlat, kombo yap</title>
+<meta name="description" content="Kristal Blok: blokları yerleştir, satır ve sütunları patlat, kombo serisiyle rekorunu katla.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700;800&family=Manrope:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  @property --aura-h { syntax: '<number>'; inherits: true; initial-value: 262; }
+
+  :root{
+    --bg:      #06080f;
+    --bg-2:    #0b0f22;
+    --ink:     #eef1ff;
+    --muted:   #939bc0;
+    --line:    color-mix(in oklab, #ffffff 11%, transparent);
+    --glass:   rgba(15,20,42,.62);
+    --glass-2: rgba(22,28,56,.55);
+    --accent:  #8b6cff;
+    --accent-2:#31dcb0;
+    --warn:    #ffb03a;
+    --aura-h:  262;
+    --step--1: clamp(.74rem, .70rem + .18vw, .84rem);
+    --step-0:  clamp(.94rem, .88rem + .28vw, 1.06rem);
+    --step-1:  clamp(1.1rem, 1rem + .5vw, 1.35rem);
+    --step-2:  clamp(1.5rem, 1.25rem + 1.3vw, 2.15rem);
+    --step-3:  clamp(2.05rem, 1.5rem + 2.6vw, 3.4rem);
+    --r-lg: 22px;
+    --r-md: 14px;
+    --shadow: 0 1px 1px rgba(0,0,0,.34), 0 18px 44px -22px rgba(0,0,0,.85);
+    --ui: "Manrope", system-ui, -apple-system, "Segoe UI", Roboto, "Hiragino Sans", "Yu Gothic", "Noto Sans JP", sans-serif;
+    --display: "Outfit", var(--ui);
+  }
+
+  *{ box-sizing: border-box; }
+  body{
+    margin: 0;
+    min-height: 100%;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--ui);
+    font-size: var(--step-0);
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+    transition: --aura-h 900ms ease;
+  }
+  main{ display: block; }
+
+  /* ---------- aurora backdrop ---------- */
+  .aura{ position: fixed; inset: -20vmax; z-index: 0; pointer-events: none; filter: blur(60px); opacity: .85; }
+  .aura b{ position: absolute; display: block; border-radius: 50%; mix-blend-mode: screen; will-change: transform; }
+  .aura b:nth-child(1){ width: 58vmax; height: 58vmax; left: 4%;  top: 6%;
+    background: radial-gradient(circle at 50% 50%, hsl(var(--aura-h) 92% 60% / .55), transparent 70%);
+    animation: drift1 26s ease-in-out infinite alternate; }
+  .aura b:nth-child(2){ width: 46vmax; height: 46vmax; right: 2%; top: 22%;
+    background: radial-gradient(circle at 50% 50%, hsl(calc(var(--aura-h) + 62) 88% 58% / .45), transparent 70%);
+    animation: drift2 32s ease-in-out infinite alternate; }
+  .aura b:nth-child(3){ width: 40vmax; height: 40vmax; left: 30%; bottom: -8%;
+    background: radial-gradient(circle at 50% 50%, hsl(calc(var(--aura-h) + 130) 90% 62% / .38), transparent 70%);
+    animation: drift3 38s ease-in-out infinite alternate; }
+  @keyframes drift1{ from{ transform: translate3d(0,0,0) scale(1);} to{ transform: translate3d(8vmax,6vmax,0) scale(1.15);} }
+  @keyframes drift2{ from{ transform: translate3d(0,0,0) scale(1.1);} to{ transform: translate3d(-9vmax,4vmax,0) scale(.95);} }
+  @keyframes drift3{ from{ transform: translate3d(0,0,0) scale(1);} to{ transform: translate3d(5vmax,-7vmax,0) scale(1.2);} }
+  body::after{
+    content:""; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image: radial-gradient(rgba(255,255,255,.5) .6px, transparent .7px);
+    background-size: 26px 26px; opacity: .05;
+  }
+
+  /* ---------- shell ---------- */
+  .shell{
+    position: relative; z-index: 1;
+    width: min(100%, 560px);
+    margin: 0 auto;
+    padding: clamp(14px, 3.4vw, 26px) clamp(12px, 3.6vw, 22px) calc(28px + env(safe-area-inset-bottom));
+    display: flex; flex-direction: column; gap: clamp(10px, 2.2vw, 16px);
+  }
+
+  /* ---------- header ---------- */
+  .top{ text-align: center; }
+  .eyebrow{
+    font-size: var(--step--1); letter-spacing: .34em; text-transform: uppercase;
+    color: var(--muted); margin: 0 0 4px; font-weight: 700;
+  }
+  h1{
+    font-family: var(--display); font-weight: 800;
+    font-size: var(--step-3); line-height: .95; letter-spacing: -.035em;
+    margin: 0; font-feature-settings: "palt";
+    background: linear-gradient(180deg, #ffffff 0%, #cdd2ff 44%, hsl(var(--aura-h) 90% 74%) 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    filter: drop-shadow(0 6px 26px hsl(var(--aura-h) 90% 60% / .3));
+  }
+  h1 span{ display: block; font-size: .42em; letter-spacing: .16em; font-weight: 700;
+    background: linear-gradient(90deg, var(--accent-2), var(--accent));
+    -webkit-background-clip: text; background-clip: text; color: transparent; margin-top: 6px; }
+
+  /* ---------- HUD ---------- */
+  .hud{
+    display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 10px;
+    padding: 10px 14px; border-radius: var(--r-lg);
+    background: linear-gradient(180deg, var(--glass-2), var(--glass));
+    border: 1px solid var(--line);
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  }
+  .stat{ display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+  .stat:last-child{ text-align: right; align-items: flex-end; }
+  .stat .k{ font-size: var(--step--1); letter-spacing: .18em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+  .stat .v{
+    font-family: var(--display); font-weight: 700; font-size: var(--step-2); line-height: 1;
+    font-variant-numeric: tabular-nums; letter-spacing: -.02em;
+  }
+  .stat.best .v{ color: var(--warn); }
+  .crown{
+    width: 34px; height: 34px; display: grid; place-items: center; border-radius: 50%;
+    background: radial-gradient(circle at 32% 26%, hsl(var(--aura-h) 95% 74% / .5), hsl(var(--aura-h) 80% 44% / .16));
+    border: 1px solid hsl(var(--aura-h) 80% 70% / .3);
+  }
+  .crown svg{ width: 18px; height: 18px; color: hsl(var(--aura-h) 90% 82%); }
+
+  /* ---------- energy ---------- */
+  .energy{ display: flex; align-items: center; gap: 10px; padding: 0 4px; }
+  .energy .lab{ font-size: var(--step--1); letter-spacing: .16em; text-transform: uppercase; color: var(--muted); font-weight: 700; white-space: nowrap; }
+  .bar{ position: relative; flex: 1; height: 9px; border-radius: 99px; background: rgba(255,255,255,.07);
+    border: 1px solid var(--line); overflow: hidden; }
+  .bar i{
+    position: absolute; top: 0; bottom: 0; left: 0; width: 0%; border-radius: 99px;
+    background: linear-gradient(90deg, var(--accent-2), var(--accent));
+    box-shadow: 0 0 14px hsl(var(--aura-h) 90% 62% / .7);
+    transition: width 380ms cubic-bezier(.2,.7,.3,1);
+  }
+  .bar.full i{ animation: pulseBar 900ms ease-in-out infinite; }
+  @keyframes pulseBar{ 50%{ filter: brightness(1.6); } }
+
+  /* ---------- stage ---------- */
+  .stage{ position: relative; }
+  canvas{ display: block; width: 100%; height: auto; touch-action: none; cursor: grab; border-radius: var(--r-lg); }
+  canvas.grabbing{ cursor: grabbing; }
+
+  .combo{
+    position: absolute; left: 50%; top: 30%; transform: translate(-50%,-50%) scale(.6);
+    opacity: 0; pointer-events: none; text-align: center;
+    font-family: var(--display); font-weight: 800; letter-spacing: -.02em;
+    font-size: var(--step-2); line-height: 1; color: #fff;
+    text-shadow: 0 0 18px hsl(var(--aura-h) 95% 60% / .9), 0 4px 18px rgba(0,0,0,.6);
+    transition: opacity 180ms ease, transform 260ms cubic-bezier(.2,1.5,.4,1);
+  }
+  .combo.on{ opacity: 1; transform: translate(-50%,-50%) scale(1); }
+  .combo small{ display: block; font-family: var(--ui); font-weight: 700; font-size: var(--step--1);
+    letter-spacing: .28em; color: hsl(var(--aura-h) 90% 82%); margin-top: 6px; }
+
+  /* ---------- controls ---------- */
+  .tools{ display: grid; grid-template-columns: repeat(4, 1fr); gap: clamp(6px, 1.8vw, 10px); }
+  button{
+    font: inherit; color: var(--ink); cursor: pointer; -webkit-tap-highlight-color: transparent;
+    background: linear-gradient(180deg, var(--glass-2), var(--glass));
+    border: 1px solid var(--line); border-radius: var(--r-md);
+    padding: 10px 6px 9px; display: flex; flex-direction: column; align-items: center; gap: 3px;
+    position: relative; transition: transform 140ms ease, border-color 200ms ease, background 200ms ease, box-shadow 200ms ease;
+    box-shadow: var(--shadow);
+  }
+  button:hover{ transform: translateY(-2px); border-color: hsl(var(--aura-h) 80% 70% / .45); }
+  button:active{ transform: translateY(0) scale(.97); }
+  button:focus-visible{ outline: 2px solid var(--accent-2); outline-offset: 2px; }
+  button svg{ width: 21px; height: 21px; stroke: currentColor; fill: none; stroke-width: 1.6;
+    stroke-linecap: round; stroke-linejoin: round; }
+  button .bl{ font-size: var(--step--1); font-weight: 700; letter-spacing: .02em; color: var(--muted); }
+  button .cnt{
+    position: absolute; top: -7px; right: -5px; min-width: 21px; height: 21px; padding: 0 5px;
+    display: grid; place-items: center; border-radius: 99px;
+    background: linear-gradient(180deg, var(--accent-2), var(--accent)); color: #0a0d1c;
+    font-family: var(--display); font-weight: 800; font-size: 12px;
+    box-shadow: 0 0 0 2px var(--bg), 0 4px 12px rgba(0,0,0,.5);
+    transform: scale(0); transition: transform 220ms cubic-bezier(.2,1.6,.4,1);
+  }
+  button .cnt.on{ transform: scale(1); }
+  button.armed{ border-color: var(--accent-2); background: linear-gradient(180deg, hsl(var(--aura-h) 90% 60% / .3), hsl(var(--aura-h) 90% 50% / .12)); }
+  button.armed svg{ color: var(--accent-2); }
+  button:disabled{ opacity: .38; cursor: not-allowed; transform: none; }
+  button.on-ic{ color: var(--accent-2); }
+  button.off-ic{ color: var(--muted); }
+
+  .hint{ margin: 0; text-align: center; color: var(--muted); font-size: var(--step--1); letter-spacing: .01em; }
+  .hint b{ color: var(--ink); font-weight: 700; }
+  .hint kbd{
+    font: inherit; font-weight: 700; color: var(--ink); padding: 1px 5px; border-radius: 5px;
+    background: rgba(255,255,255,.08); border: 1px solid var(--line);
+  }
+
+  /* ---------- overlays ---------- */
+  .veil{
+    position: absolute; inset: 0; z-index: 5; display: grid; place-items: center;
+    padding: clamp(12px, 4vw, 26px);
+    background: radial-gradient(120% 90% at 50% 10%, rgba(10,14,32,.72), rgba(4,6,14,.93));
+    backdrop-filter: blur(9px); -webkit-backdrop-filter: blur(9px);
+    border-radius: var(--r-lg);
+    opacity: 0; visibility: hidden; transition: opacity 320ms ease, visibility 320ms;
+  }
+  .veil.on{ opacity: 1; visibility: visible; }
+  .card{ text-align: center; max-width: 36ch; }
+  .card .badge{
+    display: inline-block; font-size: var(--step--1); font-weight: 800; letter-spacing: .24em;
+    text-transform: uppercase; color: #0a0d1c; padding: 5px 12px; border-radius: 99px;
+    background: linear-gradient(90deg, var(--accent-2), var(--warn)); margin-bottom: 12px;
+    transform: scale(0); transition: transform 400ms cubic-bezier(.2,1.6,.4,1) 180ms;
+  }
+  .veil.on .card .badge{ transform: scale(1); }
+  .card h2{ font-family: var(--display); font-weight: 800; font-size: var(--step-2); letter-spacing: -.03em; margin: 0 0 8px; }
+  .card p{ margin: 0 0 8px; color: var(--muted); }
+  .card .big{
+    font-family: var(--display); font-weight: 800; font-size: var(--step-3); line-height: 1;
+    font-variant-numeric: tabular-nums; margin: 10px 0 4px;
+    background: linear-gradient(180deg,#fff,hsl(var(--aura-h) 90% 72%));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .card ul{ list-style: none; padding: 0; margin: 12px 0 18px; text-align: left; display: grid; gap: 8px; }
+  .card li{ display: grid; grid-template-columns: 22px 1fr; gap: 9px; align-items: start; color: var(--muted); font-size: var(--step--1); line-height: 1.5; }
+  .card li b{ color: var(--ink); font-weight: 700; }
+  .card li .dot{ width: 22px; height: 22px; border-radius: 7px; display: grid; place-items: center;
+    background: hsl(var(--aura-h) 80% 60% / .16); border: 1px solid hsl(var(--aura-h) 80% 70% / .28);
+    font-family: var(--display); font-weight: 800; font-size: 11px; color: hsl(var(--aura-h) 90% 80%); }
+  .play{
+    flex-direction: row; justify-content: center; gap: 9px; width: 100%; padding: 15px 22px;
+    font-family: var(--display); font-weight: 800; font-size: var(--step-1); letter-spacing: -.01em;
+    background: linear-gradient(120deg, var(--accent-2), var(--accent));
+    color: #07091a; border: none;
+  }
+  .play:hover{ transform: translateY(-2px) scale(1.01); box-shadow: 0 16px 40px -14px hsl(var(--aura-h) 90% 60% / .8); }
+  .play svg{ width: 20px; height: 20px; stroke-width: 2.2; }
+
+  @media (prefers-reduced-motion: reduce){
+    .aura b{ animation: none !important; }
+    *{ transition-duration: 60ms !important; }
+  }
+  @media print{
+    body{ background:#fff; color:#000; }
+    .aura, .tools, .hint, .veil{ display: none !important; }
+    .shell{ width: 100%; }
+  }
+</style>
+</head>
+<body>
+<div class="aura" aria-hidden="true"><b></b><b></b><b></b></div>
+
+<main class="shell">
+  <header class="top">
+    <p class="eyebrow">kristal blok</p>
+    <h1>Parlat &amp; Patlat<span>satır · sütun · kombo</span></h1>
+  </header>
+
+  <section class="hud" aria-label="Skor">
+    <div class="stat">
+      <span class="k">Puan</span>
+      <span class="v" id="score">0</span>
+    </div>
+    <div class="crown" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round">
+        <path d="M3 18h18l-1.6-9-4.4 3L12 5 9 12 4.6 9z"/>
+      </svg>
+    </div>
+    <div class="stat best">
+      <span class="k">Rekor</span>
+      <span class="v" id="best">0</span>
+    </div>
+  </section>
+
+  <div class="energy">
+    <span class="lab">Enerji</span>
+    <div class="bar" id="bar" role="progressbar" aria-label="Enerji" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i id="barFill"></i></div>
+  </div>
+
+  <section class="stage">
+    <canvas id="game" width="360" height="700" aria-label="Kristal Blok oyun tahtası">
+      Kristal Blok bir blok yerleştirme oyunudur. Tarayıcın canvas desteklemiyor.
+    </canvas>
+    <div class="combo" id="combo" aria-live="polite"></div>
+
+    <div class="veil on" id="veilStart">
+      <div class="card">
+        <h2>Kristal Blok</h2>
+        <p>Blokları tahtaya sürükle. Dolu bir satır ya da sütun patlar — üst üste patlatırsan kombo katlanır.</p>
+        <ul>
+          <li><span class="dot">1</span><span><b>Sürükle</b>, ya da bloğa dokunup tahtada bir yere dokun.</span></li>
+          <li><span class="dot">2</span><span>Tahtayı tarayan <b>parlayan çizgi</b>, o hamlede patlayacak satırı gösterir.</span></li>
+          <li><span class="dot">3</span><span>Çizgi patlattıkça <b>enerji</b> dolar; dolduğunda güçlendirme kazanırsın.</span></li>
+        </ul>
+        <button class="play" id="btnStart">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4.5v15l13-7.5z"/></svg>
+          Oyna
+        </button>
+      </div>
+    </div>
+
+    <div class="veil" id="veilOver">
+      <div class="card">
+        <span class="badge" id="recordBadge">Yeni Rekor</span>
+        <h2 id="overTitle">Oyun Bitti</h2>
+        <p id="overSub">Yerleşecek yer kalmadı.</p>
+        <div class="big" id="overScore">0</div>
+        <p id="overBest">Rekor 0</p>
+        <button class="play" id="btnAgain" style="margin-top:14px">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-2.4-5.7"/><path d="M20.5 3v4.6h-4.6"/></svg>
+          Tekrar Oyna
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <section class="tools" aria-label="Güçlendirmeler">
+    <button id="pHammer" title="Kırıcı — bir kareyi ve çevresini kır">
+      <svg viewBox="0 0 24 24"><path d="M4.5 8.5 8.5 4.5l4 4-4 4z"/><path d="M10.5 10.5l8.5 8.5"/></svg>
+      <span class="bl">Kırıcı</span>
+      <span class="cnt" id="cHammer">0</span>
+    </button>
+    <button id="pRefresh" title="Yenile — eldeki üç bloğu değiştir">
+      <svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.4-5.7"/><path d="M20.6 3.4v4.6H16"/></svg>
+      <span class="bl">Yenile</span>
+      <span class="cnt" id="cRefresh">0</span>
+    </button>
+    <button id="pUndo" title="Geri Al — son hamleyi geri sar">
+      <svg viewBox="0 0 24 24"><path d="M9 6 4.5 10.5 9 15"/><path d="M4.5 10.5h8.5a5 5 0 0 1 0 10h-3"/></svg>
+      <span class="bl">Geri Al</span>
+      <span class="cnt" id="cUndo">0</span>
+    </button>
+    <button id="pSound" class="on-ic" aria-pressed="true" title="Sesi aç / kapat">
+      <svg viewBox="0 0 24 24"><path d="M4 9.5h3l4-3.5v12l-4-3.5H4z"/><path d="M15 9a4.5 4.5 0 0 1 0 6"/><path d="M17.6 6.4a8 8 0 0 1 0 11.2"/></svg>
+      <span class="bl">Ses</span>
+    </button>
+  </section>
+
+  <p class="hint">
+    Klavye: <kbd>1</kbd><kbd>2</kbd><kbd>3</kbd> blok seç, <kbd>←</kbd><kbd>↑</kbd><kbd>→</kbd><kbd>↓</kbd> gez, <kbd>Enter</kbd> bırak.
+  </p>
+</main>
+
+<script>
+(function(){
+"use strict";
+
+/* ================= yardımcılar ================= */
+const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
+const lerp=(a,b,t)=>a+(b-a)*t;
+const rnd=(a,b)=>a+Math.random()*(b-a);
+const pick=a=>a[(Math.random()*a.length)|0];
+const $=id=>document.getElementById(id);
+const reduced=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const N=8;
+const TOTAL=N*N;
+const IDX=(r,c)=>r*N+c;
+
+function hexRGB(h){ h=h.replace("#","");
+  return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)]; }
+function mixc(a,b,t){ const A=hexRGB(a),B=hexRGB(b);
+  return "rgb("+Math.round(lerp(A[0],B[0],t))+","+Math.round(lerp(A[1],B[1],t))+","+Math.round(lerp(A[2],B[2],t))+")"; }
+function rgba(hex,a){ const A=hexRGB(hex); return "rgba("+A[0]+","+A[1]+","+A[2]+","+a+")"; }
+function rr(g,x,y,w,h,r){
+  r=Math.min(r,Math.abs(w)/2,Math.abs(h)/2);
+  g.beginPath();
+  g.moveTo(x+r,y); g.lineTo(x+w-r,y); g.quadraticCurveTo(x+w,y,x+w,y+r);
+  g.lineTo(x+w,y+h-r); g.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+  g.lineTo(x+r,y+h); g.quadraticCurveTo(x,y+h,x,y+h-r);
+  g.lineTo(x,y+r); g.quadraticCurveTo(x,y,x+r,y); g.closePath();
+}
+
+/* ================= kristal sprite'ları ================= */
+const GEMS=["#ff4d6d","#ffb03a","#2fd6a6","#4d9dff","#a97cff","#ff7ac6"];
+const SPR=192, SPAD=34;
+const sprites=[];
+
+function makeSprite(hex){
+  const c=document.createElement("canvas"); c.width=c.height=SPR;
+  const g=c.getContext("2d");
+  const d=SPR-SPAD*2, r=d*0.27;
+  const halo=g.createRadialGradient(SPR/2,SPR/2,d*0.28,SPR/2,SPR/2,SPR/2);
+  halo.addColorStop(0,rgba(hex,.42)); halo.addColorStop(.55,rgba(hex,.14)); halo.addColorStop(1,rgba(hex,0));
+  g.fillStyle=halo; g.fillRect(0,0,SPR,SPR);
+  rr(g,SPAD,SPAD,d,d,r);
+  const lg=g.createLinearGradient(SPAD,SPAD,SPAD+d,SPAD+d);
+  lg.addColorStop(0,mixc(hex,"#ffffff",.46));
+  lg.addColorStop(.48,hex);
+  lg.addColorStop(1,mixc(hex,"#05060d",.36));
+  g.fillStyle=lg; g.fill();
+  g.save(); g.clip();
+  const sh=g.createLinearGradient(0,SPAD+d*.55,0,SPAD+d);
+  sh.addColorStop(0,rgba(hex,0)); sh.addColorStop(1,"rgba(0,0,0,.34)");
+  g.fillStyle=sh; g.fillRect(SPAD,SPAD,d,d);
+  const gl=g.createLinearGradient(0,SPAD+d*.06,0,SPAD+d*.52);
+  gl.addColorStop(0,"rgba(255,255,255,.62)"); gl.addColorStop(1,"rgba(255,255,255,0)");
+  rr(g,SPAD+d*.09,SPAD+d*.07,d*.82,d*.42,d*.2); g.fillStyle=gl; g.fill();
+  g.restore();
+  g.lineWidth=Math.max(1.6,d*.04);
+  g.strokeStyle="rgba(255,255,255,.26)";
+  rr(g,SPAD+g.lineWidth/2,SPAD+g.lineWidth/2,d-g.lineWidth,d-g.lineWidth,r-g.lineWidth/2); g.stroke();
+  g.strokeStyle=rgba(hex,.55); g.lineWidth=Math.max(1,d*.022);
+  rr(g,SPAD+d*.035,SPAD+d*.035,d-d*.07,d-d*.07,r*.86); g.stroke();
+  g.beginPath(); g.ellipse(SPAD+d*.31,SPAD+d*.23,d*.15,d*.1,-0.55,0,6.2832);
+  g.fillStyle="rgba(255,255,255,.66)"; g.fill();
+  return c;
+}
+GEMS.forEach(h=>sprites.push(makeSprite(h)));
+
+function blit(g,ci,cx,cy,size,alpha,scale){
+  const s=size*(scale==null?1:scale); if(s<=0.4) return;
+  const full=s*(SPR/(SPR-SPAD*2));
+  g.globalAlpha=alpha==null?1:alpha;
+  g.drawImage(sprites[ci],cx-full/2,cy-full/2,full,full);
+  g.globalAlpha=1;
+}
+
+/* ================= şekiller ================= */
+const SHAPES=[];
+function S(cells,w){
+  let cw=0,ch=0;
+  for(const p of cells){ cw=Math.max(cw,p[1]+1); ch=Math.max(ch,p[0]+1); }
+  SHAPES.push({cells,w:cw,h:ch,weight:w});
+}
+S([[0,0]],4);
+S([[0,0],[0,1]],7);            S([[0,0],[1,0]],7);
+S([[0,0],[0,1],[0,2]],6);      S([[0,0],[1,0],[2,0]],6);
+S([[0,0],[0,1],[0,2],[0,3]],3);S([[0,0],[1,0],[2,0],[3,0]],3);
+S([[0,0],[0,1],[1,0],[1,1]],7);
+S([[0,0],[0,1],[0,2],[1,0],[1,1],[1,2]],3);
+S([[0,0],[0,1],[1,0],[1,1],[2,0],[2,1]],3);
+S([[0,0],[0,1],[0,2],[1,0],[1,1],[1,2],[2,0],[2,1],[2,2]],1);
+S([[0,0],[1,0],[1,1]],6); S([[0,0],[0,1],[1,0]],6);
+S([[0,1],[1,0],[1,1]],6); S([[0,0],[0,1],[1,1]],6);
+S([[0,0],[0,1],[0,2],[1,0]],4); S([[0,0],[0,1],[0,2],[1,2]],4);
+S([[0,0],[1,0],[2,0],[2,1]],4); S([[0,0],[1,0],[2,0],[0,1]],4);
+S([[0,0],[0,1],[1,1],[2,1]],4); S([[0,1],[0,2],[1,1],[2,1]],4);
+S([[0,0],[1,0],[1,1],[1,2]],4); S([[0,2],[1,0],[1,1],[1,2]],4);
+S([[0,0],[0,1],[1,1],[1,2]],3); S([[0,1],[0,2],[1,0],[1,1]],3);
+S([[0,1],[1,0],[1,1],[2,0]],3); S([[0,0],[1,0],[1,1],[2,1]],3);
+S([[0,1],[1,0],[1,1],[1,2]],4); S([[0,0],[0,1],[0,2],[1,1]],4);
+S([[0,0],[1,0],[2,0],[1,1]],4); S([[0,1],[1,0],[1,1],[2,1]],4);
+
+const TOTALW=SHAPES.reduce((a,s)=>a+s.weight,0);
+function randomShape(){
+  let t=Math.random()*TOTALW;
+  for(const s of SHAPES){ t-=s.weight; if(t<=0) return s; }
+  return SHAPES[0];
+}
+
+/* ================= ses ================= */
+const Snd={
+  ac:null, on:true, ready:false,
+  init(){
+    if(this.ready) return;
+    try{
+      const AC=window.AudioContext||window.webkitAudioContext;
+      if(!AC) return;
+      this.ac=new AC(); this.ready=true;
+    }catch(e){ this.ready=false; }
+  },
+  tone(f,dur,type,vol,delay,to){
+    if(!this.on||!this.ready||!this.ac) return;
+    try{
+      const t=this.ac.currentTime+(delay||0);
+      const o=this.ac.createOscillator(), g=this.ac.createGain();
+      o.type=type||"sine"; o.frequency.setValueAtTime(f,t);
+      if(to) o.frequency.exponentialRampToValueAtTime(to,t+dur);
+      g.gain.setValueAtTime(0.0001,t);
+      g.gain.linearRampToValueAtTime(vol||.07,t+0.012);
+      g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+      o.connect(g); g.connect(this.ac.destination);
+      o.start(t); o.stop(t+dur+0.06);
+    }catch(e){}
+  },
+  place(){ this.tone(430,.09,"triangle",.055); this.tone(650,.07,"sine",.035,.018); },
+  bad(){ this.tone(200,.15,"sawtooth",.045,0,110); },
+  clear(n){
+    for(let i=0;i<Math.min(n+1,5);i++) this.tone(520*Math.pow(1.26,i),.24,"sine",.062,i*.055);
+    this.tone(150,.34,"triangle",.05,0,90);
+  },
+  power(){ this.tone(300,.12,"square",.04); this.tone(920,.3,"sine",.055,.06); },
+  over(){ [392,311,233].forEach((f,i)=>this.tone(f,.5,"sine",.075,i*.17)); }
+};
+
+/* ================= oyun durumu ================= */
+let board=new Int16Array(TOTAL).fill(-1);
+const cellAnim=new Float32Array(TOTAL);
+let pieces=[];
+let clearing=[];
+let particles=[], floaters=[];
+let score=0, best=0, combo=0, energy=0;
+const energyMax=8;
+let powers={hammer:0,refresh:0,undo:0};
+let armed=null;
+let selected=-1;
+let cursor={r:3,c:3,on:false};
+let dragging=null;
+let locked=0;
+let shake=0;
+let status="intro";
+let history=[];
+let moveTimer=null;
+let hintShown=false;
+let auraHue=262;
+let hudScore=-1, hudBestShown=-1;
+
+const POWER_IDS={hammer:["pHammer","cHammer"],refresh:["pRefresh","cRefresh"],undo:["pUndo","cUndo"]};
+
+try{ best=parseInt(localStorage.getItem("kristalblok.best")||"0",10)||0; }catch(e){ best=0; }
+function saveBest(){ try{ localStorage.setItem("kristalblok.best",String(best)); }catch(e){} }
+
+/* ================= geometri ================= */
+const cvs=$("game"), ctx=cvs.getContext("2d");
+let W=360,H=700,pad=16,boardW=328,cell=41,boardX=16,boardY=16,
+    trayCell=22,trayTop=0,trayH=0,slotW=110,dpr=1;
+
+function layout(){
+  const rect=cvs.getBoundingClientRect();
+  W=Math.max(280,Math.round(rect.width||360));
+  pad=W*0.042;
+  boardW=W-pad*2;
+  cell=boardW/N;
+  boardX=pad; boardY=pad;
+  trayCell=cell*0.54;
+  trayH=trayCell*4+cell*0.52;
+  trayTop=pad+boardW+cell*0.42;
+  H=Math.round(pad+boardW+cell*0.42+trayH+pad*0.55);
+  slotW=boardW/3;
+  dpr=Math.min(window.devicePixelRatio||1,2.5);
+  cvs.width=Math.round(W*dpr); cvs.height=Math.round(H*dpr);
+  cvs.style.height=H+"px";
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+}
+function cellRect(r,c){
+  const g=cell*0.075;
+  return {x:boardX+c*cell+g/2, y:boardY+r*cell+g/2, s:cell-g};
+}
+function slotCenter(i){ return {x:pad+slotW*(i+0.5), y:trayTop+trayH/2}; }
+
+/* ================= mantık ================= */
+function canPlace(shape,r,c){
+  for(const p of shape.cells){
+    const rr2=r+p[0], cc=c+p[1];
+    if(rr2<0||rr2>=N||cc<0||cc>=N) return false;
+    if(board[IDX(rr2,cc)]!==-1) return false;
+  }
+  return true;
+}
+function fitsAnywhere(shape){
+  for(let r=0;r<=N-shape.h;r++) for(let c=0;c<=N-shape.w;c++) if(canPlace(shape,r,c)) return true;
+  return false;
+}
+function anyMove(list){
+  for(const p of list){ if(!p||p.placed||p.hidden) continue; if(fitsAnywhere(p.shape)) return true; }
+  return false;
+}
+function linesAfter(shape,r,c){
+  const tmp=new Int16Array(board);
+  for(const p of shape.cells) tmp[IDX(r+p[0],c+p[1])]=0;
+  const rows=[],cols=[];
+  for(let i=0;i<N;i++){ let ok=true; for(let j=0;j<N;j++) if(tmp[IDX(i,j)]===-1){ ok=false; break; } if(ok) rows.push(i); }
+  for(let j=0;j<N;j++){ let ok=true; for(let i=0;i<N;i++) if(tmp[IDX(i,j)]===-1){ ok=false; break; } if(ok) cols.push(j); }
+  return {rows,cols};
+}
+function fullRowsCols(){
+  const rows=[],cols=[];
+  for(let i=0;i<N;i++){ let ok=true; for(let j=0;j<N;j++) if(board[IDX(i,j)]===-1){ ok=false; break; } if(ok) rows.push(i); }
+  for(let j=0;j<N;j++){ let ok=true; for(let i=0;i<N;i++) if(board[IDX(i,j)]===-1){ ok=false; break; } if(ok) cols.push(j); }
+  return {rows,cols};
+}
+
+/* ================= efektler ================= */
+function burst(r,c,ci,power){
+  if(reduced) return;
+  const q=cellRect(r,c), cx=q.x+q.s/2, cy=q.y+q.s/2;
+  const n=power?9:6;
+  for(let i=0;i<n;i++){
+    const a=rnd(0,6.2832), sp=rnd(cell*.4,cell*1.6)*(power?1.4:1);
+    particles.push({x:cx+rnd(-q.s*.2,q.s*.2), y:cy+rnd(-q.s*.2,q.s*.2),
+      vx:Math.cos(a)*sp, vy:Math.sin(a)*sp-cell*.7, g:cell*2.1,
+      s:cell*rnd(.10,.22), rot:rnd(0,6.28), vr:rnd(-7,7), life:rnd(.45,.82), ci:ci});
+  }
+}
+function float(txt,x,y,col,size){
+  floaters.push({txt:txt,x:x,y:y,vy:-cell*1.5, life:1, col:col||"#fff", size:size||cell*0.5});
+}
+
+/* ================= hamle akışı ================= */
+function snapshot(){
+  return {board:board.slice(),
+    pieces:pieces.map(p=>({shape:p.shape,ci:p.ci,placed:p.placed,hidden:p.hidden})),
+    score:score, combo:combo, energy:energy};
+}
+function restore(s){
+  board.set(s.board);
+  pieces=s.pieces.map(p=>({shape:p.shape,ci:p.ci,placed:p.placed,hidden:p.hidden,anim:1,delay:0,pv:1}));
+  score=s.score; combo=s.combo; energy=s.energy;
+  clearing.length=0; particles.length=0; floaters.length=0;
+  locked=0; selected=-1; cursor.on=false; dragging=null; armed=null; hintShown=false;
+  cancelAfter();
+  syncHUD(); syncTray(); syncCombo();
+}
+function cancelAfter(){ if(moveTimer!==null){ clearTimeout(moveTimer); moveTimer=null; } }
+function scheduleAfter(delay){
+  cancelAfter();
+  moveTimer=setTimeout(function(){
+    moveTimer=null;
+    clearing.length=0;
+    if(status==="playing" && pieces.length && pieces.every(p=>p.placed)) newTray();
+    checkOver();
+  }, delay);
+}
+
+function doPlace(shape,ci,r,c){
+  history.push(snapshot());
+  if(history.length>18) history.shift();
+  let n=0;
+  for(const p of shape.cells){
+    const rr2=r+p[0], cc=c+p[1];
+    board[IDX(rr2,cc)]=ci; cellAnim[IDX(rr2,cc)]=0; n++;
+    burst(rr2,cc,ci,false);
+  }
+  score+=n;
+  const q=cellRect(r,c);
+  float("+"+n, q.x+shape.w*cell/2, q.y, "#cfd6ff", cell*0.42);
+  Snd.place();
+  shake=Math.max(shake,cell*0.16);
+  const hadLines = resolveClears();
+  syncHUD();
+  scheduleAfter(hadLines?300:110);
+}
+
+function resolveClears(){
+  const fc=fullRowsCols();
+  const lines=fc.rows.length+fc.cols.length;
+  if(lines===0){ combo=0; syncCombo(); return false; }
+  combo++;
+  const mult=Math.min(1+combo*0.5,5);
+  const gained=Math.round((lines*10+(lines-1)*20)*mult);
+  score+=gained;
+  energy+=lines;
+  locked=0.28;
+  Snd.clear(lines);
+  shake=Math.max(shake,cell*(0.28+lines*0.16));
+  const seen=new Set();
+  fc.rows.forEach(r=>{ for(let c=0;c<N;c++) seen.add(IDX(r,c)); });
+  fc.cols.forEach(c=>{ for(let r=0;r<N;r++) seen.add(IDX(r,c)); });
+  seen.forEach(k=>{
+    const r=(k/N)|0, c=k%N;
+    clearing.push({r:r,c:c,ci:board[k],t:0.28,life:0.28});
+    burst(r,c,board[k],true);
+    board[k]=-1; cellAnim[k]=0;
+  });
+  float("+"+gained, boardX+boardW/2, boardY+boardW*0.44, "#fff", cell*0.78);
+  if(lines>1) float(lines+" ÇİZGİ", boardX+boardW/2, boardY+boardW*0.56, "#ffd27a", cell*0.5);
+  if(!reduced){
+    const l=Math.max(1,Math.round(lines*8));
+    for(let i=0;i<l;i++){
+      const a=rnd(0,6.2832), sp=rnd(cell*2,cell*6);
+      particles.push({x:boardX+boardW/2+rnd(-boardW/2,boardW/2), y:boardY+boardW/2+rnd(-boardW/2,boardW/2),
+        vx:Math.cos(a)*sp, vy:Math.sin(a)*sp, g:cell*0.6, s:cell*rnd(.08,.16),
+        rot:0, vr:rnd(-9,9), life:rnd(.5,.95), ci:pick([0,1,2,3,4,5])});
+    }
+  }
+  auraHue=clamp(262+combo*16,250,340);
+  document.documentElement.style.setProperty("--aura-h",String(auraHue));
+  syncCombo();
+  return true;
+}
+
+function markUsed(i){
+  const p=pieces[i];
+  if(!p||p.placed) return;
+  p.placed=true; p.pv=1;
+}
+function newTray(){
+  let chosen=null;
+  for(let a=0;a<60;a++){
+    const t=[0,1,2].map(()=>({shape:randomShape(), ci:(Math.random()*GEMS.length)|0, placed:false}));
+    if(!chosen) chosen=t;
+    if(anyMove(t)){ chosen=t; break; }
+  }
+  pieces=chosen.map((x,i)=>({shape:x.shape, ci:x.ci, placed:false, hidden:false,
+    anim:reduced?1:0, delay:i*0.06, pv:1}));
+  selected=-1; cursor.on=false;
+  syncTray();
+}
+
+function checkOver(){
+  if(status!=="playing") return;
+  if(anyMove(pieces)) return;
+  if(powers.refresh>0 || powers.hammer>0){
+    if(!hintShown){
+      hintShown=true;
+      float("GÜÇLENDİRME KULLAN", boardX+boardW/2, boardY+boardW*0.5, "#ffd27a", cell*0.46);
+      syncTray();
+    }
+    return;
+  }
+  gameOver();
+}
+function gameOver(){
+  status="over"; Snd.over();
+  const rec=score>best;
+  if(rec){ best=score; saveBest(); }
+  $("recordBadge").style.display=rec?"inline-block":"none";
+  $("overTitle").textContent=rec?"Yeni Rekor":"Oyun Bitti";
+  $("overSub").textContent=rec?"Bu tabloyu sen açtın — kırılmayı bekliyor.":"Yerleşecek yer kalmadı.";
+  $("overScore").textContent=score.toLocaleString("tr-TR");
+  $("overBest").textContent="Rekor "+best.toLocaleString("tr-TR");
+  $("veilOver").classList.add("on");
+  syncHUD();
+}
+
+/* ================= HUD ================= */
+function syncHUD(){
+  if(hudScore!==score){ hudScore=score; $("score").textContent=score.toLocaleString("tr-TR"); }
+  if(hudBestShown!==best){ hudBestShown=best; $("best").textContent=best.toLocaleString("tr-TR"); }
+  const pct=clamp(energy/energyMax*100,0,100);
+  $("barFill").style.width=pct+"%";
+  $("bar").classList.toggle("full",pct>=100);
+  $("bar").setAttribute("aria-valuenow",String(Math.round(pct)));
+  for(const k in POWER_IDS){
+    const ids=POWER_IDS[k];
+    const cnt=$(ids[1]);
+    cnt.textContent=String(powers[k]);
+    cnt.classList.toggle("on",powers[k]>0);
+    $(ids[0]).disabled = powers[k]<=0 || status!=="playing";
+  }
+}
+function syncTray(){
+  for(const k in POWER_IDS) $(POWER_IDS[k][0]).classList.toggle("armed",armed===k);
+  syncHUD();
+}
+function syncCombo(){
+  const el=$("combo");
+  if(combo<2){ el.classList.remove("on"); el.textContent=""; return; }
+  const mult=(Math.min(1+combo*0.5,5)).toFixed(1).replace(".",",");
+  el.innerHTML="KOMBO ×"+mult+"<small>"+combo+" seri</small>";
+  el.classList.add("on");
+}
+
+/* ================= girdi ================= */
+function pos(e){
+  const r=cvs.getBoundingClientRect();
+  return {x:(e.clientX-r.left)*(W/r.width), y:(e.clientY-r.top)*(H/r.height)};
+}
+function slotAt(p){
+  if(p.y<trayTop-2) return -1;
+  for(let i=0;i<3;i++){ const sx=pad+slotW*i; if(p.x>=sx && p.x<sx+slotW) return i; }
+  return -1;
+}
+function boardCellAt(p){
+  const c=Math.floor((p.x-boardX)/cell), r=Math.floor((p.y-boardY)/cell);
+  if(r<0||r>=N||c<0||c>=N) return null;
+  return {r:r,c:c};
+}
+
+cvs.addEventListener("pointerdown",function(ev){
+  Snd.init();
+  if(status!=="playing"||locked>0) return;
+  const p=pos(ev);
+  const bc=boardCellAt(p);
+
+  if(armed==="hammer"){
+    if(bc){ ev.preventDefault(); useHammer(bc.r,bc.c); }
+    return;
+  }
+  if(selected>=0 && pieces[selected] && !pieces[selected].placed && bc){
+    ev.preventDefault(); placeSelected(bc.r,bc.c); return;
+  }
+  const si=slotAt(p);
+  if(si<0 || !pieces[si] || pieces[si].placed || pieces[si].hidden){
+    if(selected>=0){ selected=-1; cursor.on=false; syncTray(); }
+    return;
+  }
+  ev.preventDefault();
+  cvs.classList.add("grabbing");
+  dragging={i:si, x:p.x, y:p.y, t:0, moved:false, sx:p.x, sy:p.y, cs:trayCell,
+            px:p.x, py:p.y, valid:false, tr:-99, tc:-99, clearRows:[], clearCols:[]};
+  if(cvs.setPointerCapture){ try{ cvs.setPointerCapture(ev.pointerId); }catch(e){} }
+});
+
+cvs.addEventListener("pointermove",function(ev){
+  if(!dragging||status!=="playing") return;
+  const p=pos(ev);
+  dragging.x=p.x; dragging.y=p.y;
+  if(Math.hypot(p.x-dragging.sx,p.y-dragging.sy)>7) dragging.moved=true;
+});
+
+function computeDrag(){
+  const d=dragging; if(!d) return;
+  const cs=lerp(trayCell,cell,clamp(d.t/0.13,0,1));
+  d.cs=cs;
+  const shape=pieces[d.i].shape;
+  const w=shape.w*cs, h=shape.h*cs;
+  const lift=cell*0.95*clamp(d.t/0.16,0,1);
+  d.px=d.x-w/2;
+  d.py=d.y-h/2-lift;
+  const c=Math.round((d.px-boardX)/cell);
+  const r=Math.round((d.py-boardY)/cell);
+  d.tr=r; d.tc=c;
+  d.valid=canPlace(shape,r,c);
+  const wc=d.valid?linesAfter(shape,r,c):{rows:[],cols:[]};
+  d.clearRows=wc.rows; d.clearCols=wc.cols;
+}
+function endDrag(commit){
+  const d=dragging; if(!d) return;
+  cvs.classList.remove("grabbing");
+  if(commit && d.moved){
+    if(d.valid){
+      const P=pieces[d.i];
+      doPlace(P.shape, P.ci, d.tr, d.tc);
+      markUsed(d.i);
+      selected=-1; cursor.on=false;
+      syncTray();
+    } else if(d.py < trayTop-2){
+      Snd.bad();
+      const sc=slotCenter(d.i);
+      float("SIĞMADI", sc.x, sc.y-trayCell*2, "#ff9aa8", cell*0.36);
+    }
+  } else if(commit && !d.moved){
+    selected=(selected===d.i)?-1:d.i;
+    cursor.on=selected>=0;
+    if(cursor.on){ cursor.r=3; cursor.c=3; }
+    syncTray();
+  }
+  dragging=null;
+}
+cvs.addEventListener("pointerup",function(ev){
+  endDrag(true);
+  if(cvs.releasePointerCapture){ try{ cvs.releasePointerCapture(ev.pointerId); }catch(e){} }
+});
+cvs.addEventListener("pointercancel",function(){ endDrag(false); });
+
+function placeSelected(r,c){
+  const P=pieces[selected];
+  if(!P||P.placed) return;
+  const sh=P.shape;
+  const rr2=clamp(r-Math.floor(sh.h/2),0,N-sh.h);
+  const cc=clamp(c-Math.floor(sh.w/2),0,N-sh.w);
+  if(!canPlace(sh,rr2,cc)){
+    Snd.bad();
+    float("SIĞMADI", boardX+c*cell+cell/2, boardY+r*cell, "#ff9aa8", cell*0.36);
+    return;
+  }
+  doPlace(sh,P.ci,rr2,cc);
+  markUsed(selected);
+  selected=-1; cursor.on=false;
+  syncTray();
+}
+function placeAtCursor(){
+  const P=pieces[selected];
+  if(!P||P.placed) return;
+  const sh=P.shape;
+  const r=clamp(cursor.r,0,N-sh.h), c=clamp(cursor.c,0,N-sh.w);
+  if(!canPlace(sh,r,c)){
+    Snd.bad();
+    float("SIĞMADI", boardX+c*cell+cell/2, boardY+r*cell, "#ff9aa8", cell*0.36);
+    return;
+  }
+  doPlace(sh,P.ci,r,c);
+  markUsed(selected);
+  selected=-1; cursor.on=false;
+  syncTray();
+}
+
+/* ---- klavye ---- */
+window.addEventListener("keydown",function(e){
+  if(status!=="playing") return;
+  const ae=document.activeElement;
+  if(ae && (ae.tagName==="BUTTON"||ae.tagName==="INPUT")) return;
+  const k=e.key;
+  if(k==="1"||k==="2"||k==="3"){
+    const i=parseInt(k,10)-1;
+    if(pieces[i] && !pieces[i].placed){
+      selected=(selected===i)?-1:i;
+      cursor.on=selected>=0;
+      if(cursor.on){ cursor.r=3; cursor.c=3; }
+      syncTray();
+    }
+    e.preventDefault(); return;
+  }
+  if(selected<0) return;
+  if(k==="ArrowLeft"||k==="ArrowRight"||k==="ArrowUp"||k==="ArrowDown"){
+    cursor.on=true;
+    if(k==="ArrowLeft") cursor.c=clamp(cursor.c-1,0,N-1);
+    else if(k==="ArrowRight") cursor.c=clamp(cursor.c+1,0,N-1);
+    else if(k==="ArrowUp") cursor.r=clamp(cursor.r-1,0,N-1);
+    else cursor.r=clamp(cursor.r+1,0,N-1);
+    e.preventDefault(); return;
+  }
+  if(k==="Enter"||k===" "||k==="Spacebar"){
+    if(locked>0) return;
+    placeAtCursor();
+    e.preventDefault(); return;
+  }
+  if(k==="Escape"){
+    selected=-1; cursor.on=false; syncTray();
+    e.preventDefault();
+  }
+});
+
+/* ================= güçlendirmeler ================= */
+function arm(k){
+  if(powers[k]<=0||status!=="playing") return;
+  if(k==="refresh"){
+    powers[k]--; armed=null;
+    newTray();
+    Snd.power();
+    float("YENİ BLOKLAR", boardX+boardW/2, trayTop+trayCell*2, "#8ff0d4", cell*0.42);
+    syncTray(); return;
+  }
+  if(k==="undo"){
+    if(!history.length){ Snd.bad(); armed=null; syncTray(); return; }
+    powers[k]--; armed=null;
+    restore(history.pop());
+    Snd.power();
+    float("GERİ ALINDI", boardX+boardW/2, boardY+boardW*0.5, "#8ff0d4", cell*0.46);
+    syncTray(); return;
+  }
+  armed=(armed===k)?null:k;
+  selected=-1; cursor.on=false;
+  syncTray();
+}
+function useHammer(r,c){
+  powers.hammer--; armed=null;
+  cancelAfter();
+  const cells=[[r,c],[r-1,c],[r+1,c],[r,c-1],[r,c+1]];
+  let n=0;
+  for(const cellPos of cells){
+    const rr2=cellPos[0], cc=cellPos[1];
+    if(rr2<0||rr2>=N||cc<0||cc>=N) continue;
+    if(board[IDX(rr2,cc)]===-1) continue;
+    burst(rr2,cc,board[IDX(rr2,cc)],true);
+    clearing.push({r:rr2,c:cc,ci:board[IDX(rr2,cc)],t:0.12,life:0.12});
+    board[IDX(rr2,cc)]=-1; n++;
+  }
+  Snd.power();
+  shake=Math.max(shake,cell*0.5);
+  if(n>0) float("KIRILDI", boardX+c*cell+cell/2, boardY+r*cell, "#ffd27a", cell*0.45);
+  locked=0.18;
+  syncTray();
+  scheduleAfter(160);
+}
+$("pHammer").addEventListener("click",()=>arm("hammer"));
+$("pRefresh").addEventListener("click",()=>arm("refresh"));
+$("pUndo").addEventListener("click",()=>arm("undo"));
+$("pSound").addEventListener("click",()=>{
+  Snd.on=!Snd.on;
+  const b=$("pSound");
+  b.classList.toggle("on-ic",Snd.on);
+  b.classList.toggle("off-ic",!Snd.on);
+  b.setAttribute("aria-pressed",Snd.on?"true":"false");
+  if(Snd.on){ Snd.init(); Snd.power(); }
+});
+
+/* ================= döngü ================= */
+function startGame(){
+  board.fill(-1); cellAnim.fill(0);
+  clearing.length=0; particles.length=0; floaters.length=0;
+  score=0; combo=0; energy=0; powers={hammer:1,refresh:1,undo:0};
+  history=[]; armed=null; selected=-1; cursor={r:3,c:3,on:false};
+  dragging=null; locked=0; shake=0; hintShown=false; auraHue=262;
+  cancelAfter();
+  document.documentElement.style.setProperty("--aura-h","262");
+  status="playing";
+  newTray();
+  $("veilStart").classList.remove("on");
+  $("veilOver").classList.remove("on");
+  syncHUD(); syncTray(); syncCombo();
+}
+$("btnStart").addEventListener("click",()=>{ Snd.init(); startGame(); });
+$("btnAgain").addEventListener("click",()=>{ Snd.init(); startGame(); });
+
+function getPreview(){
+  if(dragging && dragging.t>0.05){
+    const P=pieces[dragging.i];
+    if(!P) return null;
+    return {shape:P.shape, ci:P.ci, r:dragging.tr, c:dragging.tc, valid:dragging.valid,
+            rows:dragging.clearRows, cols:dragging.clearCols};
+  }
+  if(selected>=0 && cursor.on && pieces[selected] && !pieces[selected].placed){
+    const sh=pieces[selected].shape;
+    const r=clamp(cursor.r,0,N-sh.h), c=clamp(cursor.c,0,N-sh.w);
+    const valid=canPlace(sh,r,c);
+    const wc=valid?linesAfter(sh,r,c):{rows:[],cols:[]};
+    return {shape:sh, ci:pieces[selected].ci, r:r, c:c, valid:valid, rows:wc.rows, cols:wc.cols};
+  }
+  return null;
+}
+
+let last=0;
+function frame(now){
+  if(!last) last=now;
+  const dt=Math.min(0.05,(now-last)/1000); last=now;
+  update(dt); draw();
+  requestAnimationFrame(frame);
+}
+function update(dt){
+  if(locked>0) locked=Math.max(0,locked-dt);
+  if(dragging) dragging.t+=dt;
+  if(shake>0) shake=Math.max(0,shake-dt*cell*7);
+  for(let i=0;i<TOTAL;i++) if(cellAnim[i]<1) cellAnim[i]=Math.min(1,cellAnim[i]+dt*4.4);
+  for(const p of pieces){
+    if(!p.hidden && p.anim<1){
+      p.delay-=dt;
+      if(p.delay<=0) p.anim=Math.min(1,p.anim+dt*5.5);
+    }
+    if(p.placed && p.pv>0) p.pv=Math.max(0,p.pv-dt*5.2);
+    if(p.placed && p.pv<=0) p.hidden=true;
+  }
+  for(let i=clearing.length-1;i>=0;i--){
+    clearing[i].t-=dt;
+    if(clearing[i].t<=0) clearing.splice(i,1);
+  }
+  for(let i=particles.length-1;i>=0;i--){
+    const p=particles[i]; p.life-=dt;
+    if(p.life<=0){ particles.splice(i,1); continue; }
+    p.vy+=p.g*dt; p.x+=p.vx*dt; p.y+=p.vy*dt; p.rot+=p.vr*dt;
+    p.vx*=(1-1.6*dt); p.vy*=(1-0.6*dt);
+  }
+  for(let i=floaters.length-1;i>=0;i--){
+    const f=floaters[i]; f.life-=dt*1.15;
+    if(f.life<=0){ floaters.splice(i,1); continue; }
+    f.y+=f.vy*dt; f.vy*=(1-2.2*dt);
+  }
+}
+
+function draw(){
+  ctx.clearRect(0,0,W,H);
+  ctx.save();
+  if(shake>0.2) ctx.translate(rnd(-shake,shake),rnd(-shake,shake));
+
+  const bp=Math.min(9,pad*0.62);
+  const g=cell*0.075;
+
+  /* --- tahta paneli --- */
+  rr(ctx,boardX-bp,boardY-bp,boardW+bp*2,boardW+bp*2,cell*0.36);
+  const pg=ctx.createLinearGradient(boardX,boardY,boardX+boardW,boardY+boardW);
+  pg.addColorStop(0,"rgba(255,255,255,.055)");
+  pg.addColorStop(1,"rgba(255,255,255,.02)");
+  ctx.fillStyle=pg; ctx.fill();
+  ctx.lineWidth=1.2; ctx.strokeStyle="rgba(255,255,255,.10)"; ctx.stroke();
+
+  /* --- boş kareler --- */
+  for(let r=0;r<N;r++) for(let c=0;c<N;c++){
+    const q=cellRect(r,c);
+    rr(ctx,q.x,q.y,q.s,q.s,cell*0.2);
+    ctx.fillStyle="rgba(255,255,255,.035)"; ctx.fill();
+    ctx.lineWidth=1; ctx.strokeStyle="rgba(255,255,255,.045)"; ctx.stroke();
+  }
+
+  /* --- önizleme: patlayacak çizgiler --- */
+  const pv=getPreview();
+  if(pv && pv.valid && (pv.rows.length||pv.cols.length)){
+    const pulse=0.42+0.28*Math.sin(performance.now()/140);
+    pv.rows.forEach(r=>{
+      rr(ctx,boardX,boardY+r*cell+g/2,boardW,cell-g,cell*0.2);
+      ctx.fillStyle="rgba(255,214,120,"+(pulse*0.30)+")"; ctx.fill();
+      ctx.lineWidth=1.6; ctx.strokeStyle="rgba(255,225,160,"+(pulse*0.75)+")"; ctx.stroke();
+    });
+    pv.cols.forEach(c=>{
+      rr(ctx,boardX+c*cell+g/2,boardY,cell-g,boardW,cell*0.2);
+      ctx.fillStyle="rgba(255,214,120,"+(pulse*0.30)+")"; ctx.fill();
+      ctx.lineWidth=1.6; ctx.strokeStyle="rgba(255,225,160,"+(pulse*0.75)+")"; ctx.stroke();
+    });
+  }
+
+  /* --- yerleşmiş kristaller --- */
+  for(let r=0;r<N;r++) for(let c=0;c<N;c++){
+    const k=IDX(r,c), ci=board[k];
+    if(ci<0) continue;
+    const q=cellRect(r,c);
+    const a=cellAnim[k];
+    const sc=0.55+0.45*(1-Math.pow(1-a,3));
+    blit(ctx,ci,q.x+q.s/2,q.y+q.s/2,q.s,Math.min(1,a*1.5),sc);
+  }
+
+  /* --- önizleme: hayalet blok --- */
+  if(pv){
+    for(const p of pv.shape.cells){
+      const r=pv.r+p[0], c=pv.c+p[1];
+      if(r<0||r>=N||c<0||c>=N) continue;
+      if(!pv.valid && (pv.r<0||pv.r+pv.shape.h>N||pv.c<0||pv.c+pv.shape.w>N)) continue;
+      const q=cellRect(r,c);
+      blit(ctx,pv.ci,q.x+q.s/2,q.y+q.s/2,q.s, pv.valid?0.30:0.16, 0.94);
+      rr(ctx,q.x,q.y,q.s,q.s,cell*0.2);
+      ctx.lineWidth=1.6;
+      ctx.strokeStyle=pv.valid?rgba(GEMS[pv.ci],.7):"rgba(255,110,130,.55)";
+      ctx.stroke();
+    }
+    if(cursor.on && selected>=0 && !dragging){
+      const q=cellRect(clamp(pv.r,0,N-1),clamp(pv.c,0,N-1));
+      rr(ctx,q.x-cell*0.06,q.y-cell*0.06,q.s+cell*0.12,q.s+cell*0.12,cell*0.22);
+      ctx.lineWidth=2; ctx.strokeStyle="rgba(255,255,255,.65)"; ctx.stroke();
+    }
+  }
+
+  /* --- patlayan kristaller --- */
+  for(const c of clearing){
+    const q=cellRect(c.r,c.c);
+    const t=clamp(c.t/c.life,0,1);
+    blit(ctx,c.ci,q.x+q.s/2,q.y+q.s/2,q.s,1,0.6+t*0.55);
+    ctx.globalCompositeOperation="lighter";
+    blit(ctx,c.ci,q.x+q.s/2,q.y+q.s/2,q.s,(1-t)*0.55,1.5-t*0.4);
+    ctx.globalCompositeOperation="source-over";
+  }
+
+  /* --- tepsi paneli --- */
+  const tp=Math.min(8,pad*0.6);
+  rr(ctx,pad-tp,trayTop-tp,boardW+tp*2,trayH+tp*2,cell*0.3);
+  const tg=ctx.createLinearGradient(0,trayTop,0,trayTop+trayH);
+  tg.addColorStop(0,"rgba(255,255,255,.045)");
+  tg.addColorStop(1,"rgba(255,255,255,.015)");
+  ctx.fillStyle=tg; ctx.fill();
+  ctx.lineWidth=1.2; ctx.strokeStyle="rgba(255,255,255,.08)"; ctx.stroke();
+
+  /* --- tepsideki bloklar --- */
+  for(let i=0;i<3;i++){
+    const pc=slotCenter(i);
+    ctx.save();
+    ctx.beginPath(); ctx.ellipse(pc.x,pc.y+trayCell*1.55,slotW*0.28,trayCell*0.28,0,0,6.2832);
+    ctx.fillStyle="rgba(0,0,0,.35)"; ctx.fill();
+    ctx.restore();
+
+    const P=pieces[i];
+    if(!P||P.hidden) continue;
+    if(dragging && dragging.i===i) continue;
+    const a=P.anim, ease=1-Math.pow(1-a,3);
+    const sc=(0.5+0.5*ease)*(P.placed?P.pv:1);
+    if(sc<=0.02) continue;
+    const alpha=clamp(a*(P.placed?P.pv:1),0,1);
+    const cs=trayCell;
+    const w=P.shape.w*cs, h=P.shape.h*cs;
+    const ox=pc.x-w/2, oy=pc.y-h/2;
+    if(selected===i){
+      const pl=0.5+0.5*Math.sin(performance.now()/220);
+      rr(ctx,ox-cs*0.28,oy-cs*0.28,w+cs*0.56,h+cs*0.56,cs*0.34);
+      ctx.lineWidth=2; ctx.strokeStyle="rgba(255,255,255,"+(0.35+pl*0.5)+")"; ctx.stroke();
+    }
+    for(const p of P.shape.cells){
+      blit(ctx,P.ci,ox+p[1]*cs+cs/2,oy+p[0]*cs+cs/2,cs*0.93,alpha,sc);
+    }
+  }
+
+  /* --- sürüklenen blok --- */
+  if(dragging){
+    computeDrag();
+    const d=dragging, P=pieces[d.i];
+    if(P){
+      const cs=d.cs, w=P.shape.w*cs, h=P.shape.h*cs;
+      ctx.save();
+      ctx.beginPath();
+      ctx.ellipse(d.px+w/2, d.py+h+cs*0.5, w*0.42, cs*0.22,0,0,6.2832);
+      ctx.fillStyle="rgba(0,0,0,.42)";
+      if("filter" in ctx) ctx.filter="blur(6px)";
+      ctx.fill();
+      ctx.restore();
+      for(const p of P.shape.cells){
+        blit(ctx,P.ci,d.px+p[1]*cs+cs/2,d.py+p[0]*cs+cs/2,cs,1,1);
+      }
+    }
+  }
+
+  /* --- parçacıklar --- */
+  if(particles.length){
+    ctx.globalCompositeOperation="lighter";
+    for(const p of particles){
+      const a=clamp(p.life,0,1);
+      ctx.save();
+      ctx.translate(p.x,p.y); ctx.rotate(p.rot);
+      rr(ctx,-p.s/2,-p.s/2,p.s,p.s*0.78,p.s*0.25);
+      ctx.fillStyle=rgba(GEMS[p.ci],a*0.95); ctx.fill();
+      ctx.restore();
+    }
+    ctx.globalCompositeOperation="source-over";
+  }
+
+  /* --- uçan yazılar --- */
+  for(const f of floaters){
+    const a=clamp(f.life,0,1);
+    ctx.save();
+    ctx.globalAlpha=a;
+    ctx.font="800 "+f.size+"px Outfit, Manrope, system-ui, sans-serif";
+    ctx.textAlign="center"; ctx.textBaseline="middle";
+    ctx.lineWidth=Math.max(2,f.size*0.18);
+    ctx.strokeStyle="rgba(4,6,14,.75)";
+    ctx.strokeText(f.txt,f.x,f.y);
+    ctx.fillStyle=f.col;
+    ctx.fillText(f.txt,f.x,f.y);
+    ctx.restore();
+  }
+
+  ctx.restore();
+}
+
+/* ================= kurulum ================= */
+let rT=null;
+window.addEventListener("resize",function(){
+  clearTimeout(rT);
+  rT=setTimeout(function(){ dragging=null; cvs.classList.remove("grabbing"); layout(); },120);
+});
+window.addEventListener("orientationchange",function(){ setTimeout(function(){ layout(); },220); });
+
+layout();
+status="intro";
+newTray();
+syncHUD(); syncTray(); syncCombo();
+requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
